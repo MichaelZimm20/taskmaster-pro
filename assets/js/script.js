@@ -62,7 +62,7 @@ $("#task-form-modal").on("shown.bs.modal", function() {
 });
 
 // save button in modal was clicked
-$("#task-form-modal .btn-primary").click(function() {
+$("#task-form-modal .btn-save").click(function() {
   // get form values
   var taskText = $("#modalTaskDescription").val();
   var taskDate = $("#modalDueDate").val();
@@ -223,18 +223,24 @@ $(".card .list-group").sortable({
   helper: "clone",
   activate: function(event) {
     console.log("activate", this);
+    $(this).addClass("dropover");
+    $(".bottom-trash").addClass("bottom-trash-drag");
   },
 
   deactivate: function(event) {
     console.log("deactivate", this);
+    $(this).removeClass("dropover");
+    $(".bottom-trash").removeClass("bottom-trash-drag");
   },
 
   over: function(event) {
     console.log("over", event.target);
+    $(event.target).addClass("dropover-active");
   },
 
   out: function(event) {
     console.log("out", event.target);
+    $(event.target).removeClass("dropover-active");
   },
 
   update: function(event) {
@@ -280,9 +286,14 @@ $("#trash").droppable({
   drop: function(event, ui){
    ui.draggable.remove();
   },
+  over: function(event, ui) {
+    console.log(ui);
+    $(".bottom-trash").addClass("bottom-trash-active");
+  },
 
   out: function(event,ui) {
     console.log("out");
+    $(".bottom-trash").removeClass("bottom-trash-active");
   }
 });
 
@@ -295,12 +306,12 @@ $("#modalDueDate").datepicker({
 //checks for current dates 
 //checks for over duedates with coloring it red(danger)
 //check if the date is imminent(see how many days awy the due date is)
-var auditTask = function(taskEl) {
-  
+var auditTask = function (taskEl) {
+
   //get date from task element
   var date = $(taskEl).find("span").text().trim();
 
-  
+
   //convert to moment object at 5:00pm
   var time = moment(date, "L").set("hour", 17);
 
@@ -316,10 +327,16 @@ var auditTask = function(taskEl) {
   else if (Math.abs(moment().diff(time, "days")) <= 2) {
     $(taskEl).addClass("list-group-item-warning");
   }
-  
-
-
+  console.log(taskEl)
 }
+
+setInterval(function() {
+  $(".card .list-group-item").each(function(index, el) {
+    auditTask(el);
+  });
+  // we multiply 1,000 milliseconds by 60 to convert it to 1 minute. Then we multiply that minute by 30 to get a 30-minute timer.
+}, (1000 * 60) * 30);
+
 // load tasks for the first time
 loadTasks();
 
